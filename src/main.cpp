@@ -1,22 +1,25 @@
-#include "ecs_hell/global_manager.hpp"
+#include "ecs_hell/ECS.hpp"
 #include "raylib.h"
-#include <chrono>
 #include <libassert/assert.hpp>
 #include "constants.hpp"
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
 
+ECS ECS;
 
-GlobalManager global;
+
 int main(void) {
+    ECS.initialize();
 
-    global.initialize();
 
     InitWindow(screenWidth, screenHeight, "THIS... is a BUCKET.");
 
     while (!WindowShouldClose()) {
         BeginDrawing();
+        float frametime = GetFrameTime();
+
+        PhysicsSystem.update(frametime);
 
         ClearBackground(BLACK);
 

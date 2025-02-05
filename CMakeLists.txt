@@ -154,8 +154,10 @@ add_definitions( -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} )
 ##########################################################################################
 # Setting ASSETS_PATH
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    # SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O0 -DDEBUG -fsanitize=address -Werror -g")
-    message("-- console enabled")
+    # message("-- console enabled")
+    if(NOT WIN32)
+        SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O0 -DDEBUG -fsanitize=address -Werror -g")
+    endif()
     if(NOT USE_NO_ASSETS AND NOT ${PLATFORM} STREQUAL "Web")
         # Set the asset path macro to the absolute path on the dev machine
         target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/")   
@@ -173,10 +175,10 @@ else()
       add_compile_definitions(NDEBUG)
     endif()
 endif()
-# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wswitch")
-
+if(NOT WIN32)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-variable")
+endif()
 # Set common compiler flags
-# SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-variable")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 
 if (${PLATFORM} STREQUAL "Web")

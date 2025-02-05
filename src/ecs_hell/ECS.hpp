@@ -7,10 +7,10 @@
 #include "ecs_hell/system_manager.hpp"
 #include <memory>
 
-class GlobalManager {
+class ECS {
   private:
-    std::unique_ptr<ComponentManager> component_manager;
     std::unique_ptr<EntityManager> entity_manager;
+    std::unique_ptr<ComponentManager> component_manager;
     std::unique_ptr<SystemManager> system_manager;
 
   public:
@@ -24,7 +24,7 @@ class GlobalManager {
     }
     // --------------------------------------------------------------------------------------
     // entity stuff
-    EntityId create_entity() { return entity_manager->create_entity(); }
+    [[nodiscard]] EntityId create_entity() { return entity_manager->create_entity(); }
 
     void destroy_entity(EntityId entity_id) {
         entity_manager->destroy_entity(entity_id);
@@ -52,6 +52,8 @@ class GlobalManager {
         system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
+
+
     template<typename T> // remove from entity
     void entity_remove_component(EntityId entity_id) {
         component_manager->remove_component<T>(entity_id);
@@ -62,12 +64,12 @@ class GlobalManager {
     }
 
     template<typename T>
-    T& entity_get_component(EntityId entity_id) {
+    [[nodiscard]] T& entity_get_component(EntityId entity_id) {
         return component_manager->get_component<T>(entity_id);
     }
 
     template<typename T>
-    ComponentId get_component_id() {
+    [[nodiscard]] ComponentId get_component_id() {
         return component_manager->get_component_id<T>();
     }
     // --------------------------------------------------------------------------------------
@@ -75,7 +77,7 @@ class GlobalManager {
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T>
-    std::shared_ptr<T> register_system() {
+    [[nodiscard]] std::shared_ptr<T> register_system() {
         return system_manager->register_system<T>();
     }
 
