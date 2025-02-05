@@ -27,7 +27,7 @@ class ComponentManager {
         component_ids.insert({type_name, current_component_id});
 
         // use the type_name also for creating a new array of this component
-        component_arrays({current_component_id, std::make_shared<ComponentArray<T>>()});
+        component_arrays.insert({current_component_id, std::make_shared<ComponentArray<T>>()});
 
         current_component_id++;
     }

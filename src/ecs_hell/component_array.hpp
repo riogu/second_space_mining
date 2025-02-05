@@ -1,12 +1,11 @@
 #ifndef COMPONENT_ARRAY_HPP
 #define COMPONENT_ARRAY_HPP
-#include "entity_manager.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <libassert/assert.hpp>
 #include <unordered_map>
-
+#include "raylib.h"
 #include "constants_using.hpp"
 
 struct Movement {
