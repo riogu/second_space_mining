@@ -4,6 +4,6 @@ if you want to build this project:
 - run "start_project.sh" from the root directory 'bash start_project.sh'
 
 regarding dependencies:
-- raylib is the only dependency in this project (and C/C++ 20) (i think im using C++23 but anyways lol)
-- i think you dont need anything besides a c++ compiler to get this code working
+- raylib is the only dependency in this project (and C++20)
+- i think you dont need anything besides a c++ compiler to get this code working (in theory)
 # second_space_mining
