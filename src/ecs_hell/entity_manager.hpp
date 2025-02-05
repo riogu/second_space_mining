@@ -1,19 +1,12 @@
 #ifndef ENTITY_MANAGER_HPP
 #define ENTITY_MANAGER_HPP
 #include "raylib.h"
+#include "constants_using.hpp"
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <queue>
 // Entities are represented by unique IDs
-using EntityId = uint64_t;
-const EntityId MAX_ENTITY_IDS = 5000;
-
-// components also have ids
-using ComponentId = uint8_t;
-const ComponentId MAX_COMPONENTS = 64;
-
-using ComponentMask = uint64_t;
 
 struct Location {
     Vector2 position;

@@ -1,6 +1,7 @@
 #ifndef COMPONENT_MANAGER_HPP
 #define COMPONENT_MANAGER_HPP
 #include "component_array.hpp"
+#include "constants_using.hpp"
 #include "ecs_hell/entity_manager.hpp"
 #include <memory>
 #include <string_view>
@@ -42,6 +43,8 @@ class ComponentManager {
     template<typename T>
     void add_component(EntityId entity_id, T component) {
         const char* type_name = typeid(T).name();
+        DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
+                     component_ids);
         // we now cast away from our interface into our **known** type conversion
         // much better than when i was using dynamic_cast<> to find out what the type of the
         // interface was
@@ -53,6 +56,8 @@ class ComponentManager {
     void remove_component(EntityId entity_id) {
 
         std::string_view type_name = typeid(T).name();
+        DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
+                     component_ids);
 
         ComponentArray<T> cast_component_array =
             std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
