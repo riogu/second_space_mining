@@ -1,5 +1,6 @@
+#ifndef SYSTEM_MANAGER_HPP
+#define SYSTEM_MANAGER_HPP
 #include "constants_using.hpp"
-#include "raylib.h"
 #include <libassert/assert.hpp>
 #include <memory>
 #include <set>
@@ -19,11 +20,6 @@ class System {
     std::set<EntityId> sys_entities;
 };
 
-class Movement : public System {
-  public:
-    Vector2 position;
-    Vector2 velocity;
-};
 
 class SystemManager {
   private:
@@ -74,9 +70,9 @@ class SystemManager {
 
             if ((component_mask & system_mask) == system_mask) {
                 // NOTE: (see unity EntityQuery)
-                // TODO: add **variations** of system component_masks: 
+                // TODO: add **variations** of system component_masks:
                 // requires implementing archetypes before this though
-                // >All 
+                // >All
                 // >Any
                 // >none
                 system->sys_entities.insert(entity_id);
@@ -86,3 +82,4 @@ class SystemManager {
         }
     }
 };
+#endif

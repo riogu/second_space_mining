@@ -49,10 +49,10 @@ using Index = uint64_t;
 template<typename T>
 class ComponentArray : public IComponentArray {
   private:
-    std::array<T, MAX_COMPONENTS> all_components;
+    std::array<T, MAX_COMPONENTS> all_components{};
     std::unordered_map<EntityId, Index> entity_to_index;
     std::unordered_map<Index, EntityId> index_to_entity;
-    size_t component_count;
+    size_t component_count{};
 
   public:
     void add_component_data(EntityId entity_id, T component) {

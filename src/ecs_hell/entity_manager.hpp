@@ -1,7 +1,7 @@
 #ifndef ENTITY_MANAGER_HPP
 #define ENTITY_MANAGER_HPP
-#include "raylib.h"
 #include "constants_using.hpp"
+#include "raylib.h"
 #include <array>
 #include <cassert>
 #include <cstdint>
@@ -15,10 +15,10 @@ struct Location {
 
 class EntityManager {
   private:
-    uint64_t living_entity_count;
+    uint64_t living_entity_count{};
     std::queue<EntityId> available_entity_ids;
-	// Array of component_masks where the index corresponds to the entity ID
-    std::array<ComponentMask, MAX_ENTITY_IDS> entity_component_masks;
+    // Array of component_masks where the index corresponds to the entity ID
+    std::array<ComponentMask, MAX_ENTITY_IDS> entity_component_masks{};
 
   public:
     EntityManager() {
@@ -41,6 +41,7 @@ class EntityManager {
         available_entity_ids.push(entity_id);
         living_entity_count--;
     }
+    // NOTE: entity manager is *NOT* responsible for changing component_masks
     void set_component_mask(EntityId entity_id, ComponentMask component_mask) {
         assert(living_entity_count < MAX_ENTITY_IDS && "too many living entities");
         assert(entity_id < MAX_ENTITY_IDS && "exceeded MAX_ENTITY_IDS");
@@ -49,5 +50,9 @@ class EntityManager {
     ComponentMask get_component_mask(EntityId entity_id) {
         return entity_component_masks[entity_id];
     }
+    // void update_component_mask(EntityId entity_id) {
+    //     ComponentMask component_mask = get_component_mask(entity_id);
+    //     set_component_mask(entity_id, component_mask);
+    // }
 };
 #endif

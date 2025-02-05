@@ -12,10 +12,10 @@ class ComponentManager {
 
   private:
     // each type needs to map to a respective id
-    // (components are never removed in this implementation)
+    // NOTE: (components are never removed in this implementation)
     std::unordered_map<std::string_view, ComponentId> component_ids;
     std::unordered_map<std::string_view, std::shared_ptr<IComponentArray>> component_arrays;
-    ComponentId current_component_id;
+    ComponentId current_component_id{};
 
   public:
     template<typename T>
@@ -39,7 +39,17 @@ class ComponentManager {
         // we use this component id to make component bitmasks
         return component_ids[type_name];
     }
+    template<typename T>
+    T& get_component(EntityId entity_id) {
+        const char* type_name = typeid(T).name();
+        DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
+                     component_ids);
+        ComponentArray<T> cast_component_array =
+            std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
+        return cast_component_array.get_component_data(entity_id);
+    }
 
+    // responible for changing the component mask of the entity
     template<typename T>
     void add_component(EntityId entity_id, T component) {
         const char* type_name = typeid(T).name();
@@ -50,8 +60,10 @@ class ComponentManager {
         // interface was
         ComponentArray<T> cast_component_array =
             std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
+
         cast_component_array.add_component_data(entity_id, component);
     }
+    // responible for changing the component mask of the entity
     template<typename T>
     void remove_component(EntityId entity_id) {
 
@@ -62,5 +74,14 @@ class ComponentManager {
         ComponentArray<T> cast_component_array =
             std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
         cast_component_array.remove_component_data(entity_id);
+    }
+    void clear_destroyed_entity(EntityId entity_id) {
+        // erases destroyed entity from all sets
+        for (auto const& pair : component_arrays) {
+            auto const& component_array = pair.second;
+            // notice we can erase even if the element wasnt there
+            // (simplifying the implementation so i dont go insane)
+            component_array->entity_destroyed(entity_id);
+        }
     }
 };
