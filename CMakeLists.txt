@@ -18,6 +18,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # toggle libs to be used with ON and OFF
 option(USE_NO_ASSETS "Use no assets" OFF)
 option(USE_RAYLIB "Use raylib" ON)
+option(USE_LIBASSERT "Use libassert" ON)
 
 # libraries array to be linked
 set(LIBRARIES ${PROJECT_NAME})
@@ -41,6 +42,18 @@ function(add_git_dependency libName gitURL gitTag)
             # target_compile_options(${libName} PRIVATE "-w")
         endif()  
 endfunction()
+
+if(USE_LIBASSERT)
+    set(dep libassert)
+    add_git_dependency(
+        ${dep}
+        https://github.com/jeremy-rifkin/libassert.git
+        v2.1.4
+    )
+    include_directories(RECURSE build/_deps/libassert-src/src)
+    list(APPEND LIBRARIES libassert::assert)
+endif()
+
 ##########################################################################################
 # Raylib Setup
 ##########################################################################################
@@ -55,7 +68,7 @@ if(USE_RAYLIB)
     add_git_dependency(
         ${dep}
         https://github.com/raysan5/raylib.git
-		HEAD
+        HEAD
     )
     
     FetchContent_GetProperties(${dep})
@@ -81,7 +94,43 @@ set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/src/")
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+# target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+##########################################################################################
+# Compiler and linker flags
+##########################################################################################
+
+if(NOT ${PLATFORM} STREQUAL "Web")
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libstdc++ -pthread")
+        target_link_libraries(${LIBRARIES} -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
+        # dont forget to set  "cmake.configureSettings": { "CMAKE_BUILD_TYPE": "${buildType}" } in settings.json for vs code
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O0 -DDEBUG -fsanitize=address -Werror -g")
+        endif()
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_libraries(${LIBRARIES} -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+        target_link_libraries(${LIBRARIES} -static-intel -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_link_libraries(${LIBRARIES})
+
+        if(OFF)
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")  
+        endif()
+
+        # dont forget to set  "cmake.configureSettings": { "CMAKE_BUILD_TYPE": "${buildType}" } in settings.json for vs code
+        if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+            message("-- console enabled")
+            set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug")
+        else()
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")  
+        endif()
+    else()
+        target_link_libraries(${LIBRARIES})
+    endif()
+else()
+    target_link_libraries(${LIBRARIES})
+endif()
 
 ##########################################################################################
 # Build flags and additional settings
@@ -128,7 +177,7 @@ endif()
 
 # Set common compiler flags
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-variable")
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
 
 if (${PLATFORM} STREQUAL "Web")
     # Tell Emscripten to build an .html file.

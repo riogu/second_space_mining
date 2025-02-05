@@ -1,6 +1,8 @@
-
+#include <libassert/assert.hpp>
+#include "ecs/component_array.hpp"
 #include "raylib.h"
 #include <array>
+#include <vector>
 // #include "ecs.hpp"
 /*
 cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=On
@@ -14,10 +16,6 @@ int main(void) {
     const int screenHeight = 500;
 
     InitWindow(screenWidth, screenHeight, "THIS... is a BUCKET.");
-
-
-    std::array<int, 100> wow;
-
 
     SetTargetFPS(60);
 

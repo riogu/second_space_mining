@@ -1,9 +1,10 @@
+#ifndef ENTITY_MANAGER_HPP
+#define ENTITY_MANAGER_HPP
 #include "raylib.h"
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <queue>
-
 // Entities are represented by unique IDs
 using EntityId = uint64_t;
 const EntityId MAX_ENTITY_IDS = 5000;
@@ -17,10 +18,6 @@ using ComponentMask = uint64_t;
 struct Location {
     Vector2 position;
     // Vector3 rotation;
-};
-struct Movement {
-    Vector2 initialVelocity;
-    Vector2 velocity;
 };
 
 class EntityManager {
@@ -52,7 +49,7 @@ class EntityManager {
         living_entity_count--;
     }
     void set_component_mask(EntityId entity_id, ComponentMask component_mask) {
-        assert(living_entity_count < MAX_ENTITY_IDS && "exceeded MAX_ENTITY_IDS");
+        assert(living_entity_count < MAX_ENTITY_IDS && "too many living entities");
         assert(entity_id < MAX_ENTITY_IDS && "exceeded MAX_ENTITY_IDS");
         entity_component_masks[entity_id] = component_mask;
     }
@@ -60,3 +57,4 @@ class EntityManager {
         return entity_component_masks[entity_id];
     }
 };
+#endif

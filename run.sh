@@ -1,4 +1,4 @@
 uhh="build/"
 project_name="${PWD##*/}"
-EPIC="${uhh}${project_name}"
-cmake --build build && ./$EPIC
+PROJ_PATH="${uhh}${project_name}"
+cmake --build build && ./$PROJ_PATH
