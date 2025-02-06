@@ -46,8 +46,12 @@ class ECS {
         // this updates the entity's component mask
         component_manager->add_component<T>(entity_id, component);
         // update the entity_id's mask
+        ComponentId component_id = get_component_id<T>();
         auto component_mask = entity_manager->get_component_mask(entity_id);
-        entity_manager->set_component_mask(entity_id, component_mask);
+
+        // add the component
+        entity_manager->add_to_component_mask(entity_id, component_id);
+
         // notify the systems of the change
         system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
@@ -87,8 +91,6 @@ class ECS {
     [[nodiscard]] std::shared_ptr<System> get_system(std::string_view type_name) {
         return system_manager->get_system(type_name);
     }
-
-
 
     // --------------------------------------------------------------------------------------
 };

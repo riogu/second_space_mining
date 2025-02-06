@@ -1,17 +1,12 @@
 #ifndef ENTITY_MANAGER_HPP
 #define ENTITY_MANAGER_HPP
 #include "constants_using.hpp"
-#include "raylib.h"
 #include <array>
 #include <cassert>
 #include <cstdint>
 #include <queue>
 // Entities are represented by unique IDs
 
-struct Location {
-    Vector2 position;
-    // Vector3 rotation;
-};
 
 class EntityManager {
   private:
@@ -42,17 +37,14 @@ class EntityManager {
         living_entity_count--;
     }
     // NOTE: entity manager is *NOT* responsible for changing component_masks
-    void set_component_mask(EntityId entity_id, ComponentMask component_mask) {
+    void add_to_component_mask(EntityId entity_id,ComponentId component_id) {
         assert(living_entity_count < MAX_ENTITY_IDS && "too many living entities");
         assert(entity_id < MAX_ENTITY_IDS && "exceeded MAX_ENTITY_IDS");
-        entity_component_masks[entity_id] = component_mask;
+        entity_component_masks[entity_id] |= 1 << component_id;
     }
     ComponentMask get_component_mask(EntityId entity_id) {
         return entity_component_masks[entity_id];
     }
-    // void update_component_mask(EntityId entity_id) {
-    //     ComponentMask component_mask = get_component_mask(entity_id);
-    //     set_component_mask(entity_id, component_mask);
-    // }
+
 };
 #endif

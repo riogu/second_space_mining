@@ -22,7 +22,6 @@ class System {
     virtual void sys_call() = 0;
 };
 
-
 class SystemManager {
   private:
     // convert type_name -> respective component mask
@@ -33,13 +32,15 @@ class SystemManager {
 
   public:
     template<typename T>
-    std::string_view register_system() {
+    std::string_view register_system(ComponentMask component_mask) {
         std::string_view type_name = typeid(T).name();
         DEBUG_ASSERT(all_systems.contains(type_name), "registered the system twice.", all_systems);
         auto system = std::make_shared<T>();
         all_systems.insert({type_name, system});
+        set_component_mask<T>( component_mask);
         return type_name;
     }
+private:
     template<typename T>
     void set_component_mask(ComponentMask component_mask) {
         std::string_view type_name = typeid(T).name();
@@ -47,6 +48,9 @@ class SystemManager {
                      all_systems);
         system_component_masks.insert({type_name, component_mask});
     }
+public:
+// TODO: maybe remove these extra public private later
+    
     std::shared_ptr<System> get_system(std::string_view type_name) {
         return all_systems[type_name];
     }
@@ -72,6 +76,10 @@ class SystemManager {
         for (auto const& pair : all_systems) {
             auto const& type_name = pair.first;
             auto const& system = pair.second;
+
+            DEBUG_ASSERT(!all_systems.contains(type_name),
+                         "tried using system without registering!", all_systems);
+
             auto const& system_mask = system_component_masks[type_name];
 
             if ((component_mask & system_mask) == system_mask) {
