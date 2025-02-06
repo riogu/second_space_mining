@@ -18,8 +18,8 @@ class ECS {
     // entity.add_component(component);
 
     void initialize() {
-        component_manager = std::make_unique<ComponentManager>();
         entity_manager = std::make_unique<EntityManager>();
+        component_manager = std::make_unique<ComponentManager>();
         system_manager = std::make_unique<SystemManager>();
     }
     // --------------------------------------------------------------------------------------
@@ -28,8 +28,8 @@ class ECS {
 
     void destroy_entity(EntityId entity_id) {
         entity_manager->destroy_entity(entity_id);
-        component_manager->clear_destroyed_entity(entity_id);
-        system_manager->clear_destroyed_entity(entity_id);
+        component_manager->notify_destroyed_entity(entity_id);
+        system_manager->notify_destroyed_entity(entity_id);
     }
     // --------------------------------------------------------------------------------------
 
@@ -51,8 +51,6 @@ class ECS {
         // notify the systems of the change
         system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
-
-
 
     template<typename T> // remove from entity
     void entity_remove_component(EntityId entity_id) {
@@ -77,7 +75,7 @@ class ECS {
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T>
-    [[nodiscard]] std::shared_ptr<T> register_system() {
+    [[nodiscard]] std::string_view register_system_ecs() {
         return system_manager->register_system<T>();
     }
 
@@ -85,6 +83,13 @@ class ECS {
     void set_system_component_mask(ComponentMask component_mask) {
         system_manager->set_component_mask<T>(component_mask);
     }
+
+    [[nodiscard]] std::shared_ptr<System> get_system(std::string_view type_name) {
+        return system_manager->get_system(type_name);
+    }
+
+
+
     // --------------------------------------------------------------------------------------
 };
 

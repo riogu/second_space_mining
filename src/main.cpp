@@ -2,15 +2,13 @@
 #include "raylib.h"
 #include <libassert/assert.hpp>
 #include "constants.hpp"
+#include "ecs_hell/world.hpp"
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
-
-ECS ECS;
-
+GlobalState global;
 
 int main(void) {
-    ECS.initialize();
 
 
     InitWindow(screenWidth, screenHeight, "THIS... is a BUCKET.");
@@ -19,7 +17,6 @@ int main(void) {
         BeginDrawing();
         float frametime = GetFrameTime();
 
-        PhysicsSystem.update(frametime);
 
         ClearBackground(BLACK);
 

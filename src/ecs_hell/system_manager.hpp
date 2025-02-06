@@ -17,7 +17,9 @@ class System {
     // should be fine for now and performance is OK i think
     // (consider a better approach if performance really matters?)
     // -> adding Archetypes is a bigger improvement than caring about this tho
-    std::set<EntityId> sys_entities;
+
+    std::set<EntityId> sys_entities{};
+    virtual void sys_call() = 0;
 };
 
 
@@ -31,11 +33,12 @@ class SystemManager {
 
   public:
     template<typename T>
-    std::shared_ptr<T> register_system() {
+    std::string_view register_system() {
         std::string_view type_name = typeid(T).name();
         DEBUG_ASSERT(all_systems.contains(type_name), "registered the system twice.", all_systems);
         auto system = std::make_shared<T>();
         all_systems.insert({type_name, system});
+        return type_name;
     }
     template<typename T>
     void set_component_mask(ComponentMask component_mask) {
@@ -44,14 +47,17 @@ class SystemManager {
                      all_systems);
         system_component_masks.insert({type_name, component_mask});
     }
-    template<typename T> // will i use this? not sure (consider deleting)
-    void change_component_mask(ComponentMask component_mask) {
-        std::string_view type_name = typeid(T).name();
-        DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without registering!",
-                     all_systems);
-        system_component_masks[type_name] = component_mask;
+    std::shared_ptr<System> get_system(std::string_view type_name) {
+        return all_systems[type_name];
     }
-    void clear_destroyed_entity(EntityId entity_id) {
+    // template<typename T> // will i use this? not sure (consider deleting)
+    // void change_component_mask(ComponentMask component_mask) {
+    //     std::string_view type_name = typeid(T).name();
+    //     DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without registering!",
+    //                  all_systems);
+    //     system_component_masks[type_name] = component_mask;
+    // }
+    void notify_destroyed_entity(EntityId entity_id) {
         // erases destroyed entity from all sets
         // std::set requires no checks
         for (auto const& pair : all_systems) {

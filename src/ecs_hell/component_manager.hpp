@@ -71,11 +71,10 @@ class ComponentManager {
         DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
                      component_ids);
 
-        ComponentArray<T> cast_component_array =
-            std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
+        ComponentArray<T> cast_component_array = std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
         cast_component_array.remove_component_data(entity_id);
     }
-    void clear_destroyed_entity(EntityId entity_id) {
+    void notify_destroyed_entity(EntityId entity_id) {
         // erases destroyed entity from all sets
         for (auto const& pair : component_arrays) {
             auto const& component_array = pair.second;
