@@ -14,7 +14,8 @@ class ComponentManager {
     // each type needs to map to a respective id
     // NOTE: (components are never removed in this implementation)
     std::unordered_map<std::string_view, ComponentId> component_ids;
-    std::unordered_map<std::string_view, std::shared_ptr<IComponentArray>> component_arrays;
+    std::unordered_map<std::string_view, std::shared_ptr<IComponentArray>>
+        component_arrays;
     ComponentId current_component_id{};
 
   public:
@@ -27,12 +28,13 @@ class ComponentManager {
         component_ids.insert({type_name, current_component_id});
 
         // use the type_name also for creating a new array of this component
-        component_arrays.insert({current_component_id, std::make_shared<ComponentArray<T>>()});
+        component_arrays.insert(
+            {current_component_id, std::make_shared<ComponentArray<T>>()});
 
         current_component_id++;
     }
     template<typename T>
-    ComponentId get_component_id() {
+    [[nodiscard]] ComponentId get_component_id() {
         const char* type_name = typeid(T).name();
         DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
                      component_ids);
@@ -56,14 +58,14 @@ class ComponentManager {
         DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
                      component_ids);
         // we now cast away from our interface into our **known** type conversion
-        // much better than when i was using dynamic_cast<> to find out what the type of the
-        // interface was
+        // much better than when i was using dynamic_cast<> to find out what the type of
+        // the interface was
         ComponentArray<T> cast_component_array =
             std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
 
         cast_component_array.add_component_data(entity_id, component);
     }
-    // responible for changing the component mask of the entity
+    // responsible for changing the component mask of the entity
     template<typename T>
     void remove_component(EntityId entity_id) {
 
@@ -71,7 +73,8 @@ class ComponentManager {
         DEBUG_ASSERT(component_ids.contains(type_name), "forgot to register component",
                      component_ids);
 
-        ComponentArray<T> cast_component_array = std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
+        ComponentArray<T> cast_component_array =
+            std::static_pointer_cast<ComponentArray<T>>(component_arrays[type_name]);
         cast_component_array.remove_component_data(entity_id);
     }
     void notify_destroyed_entity(EntityId entity_id) {

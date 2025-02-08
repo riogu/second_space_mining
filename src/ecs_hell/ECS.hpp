@@ -29,7 +29,7 @@ class ECS {
     void destroy_entity(EntityId entity_id) {
         entity_manager->destroy_entity(entity_id);
         component_manager->notify_destroyed_entity(entity_id);
-        system_manager->notify_destroyed_entity(entity_id);
+        // system_manager->notify_destroyed_entity(entity_id);
     }
     // --------------------------------------------------------------------------------------
 
@@ -41,28 +41,36 @@ class ECS {
     }
 
     template<typename T>
-    void entity_add_component(EntityId entity_id, T component) {
+    [[nodiscard]] ComponentMask entity_add_component(EntityId entity_id, T component) {
         // tell the component manager to add this entity_id associated to this component
         // this updates the entity's component mask
         component_manager->add_component<T>(entity_id, component);
         // update the entity_id's mask
         ComponentId component_id = get_component_id<T>();
-        auto component_mask = entity_manager->get_component_mask(entity_id);
-
         // add the component
         entity_manager->add_to_component_mask(entity_id, component_id);
 
+        // NOTE: this is slightly slower for clarity, this method can be merged
+        // so you dont have to call "get component mask" after the call
+        return entity_manager->get_component_mask(entity_id);
+
         // notify the systems of the change
-        system_manager->entity_component_mask_changed(entity_id, component_mask);
+        // NOTE: change this so it wont notify systems until the end of the frame
+        // system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
     template<typename T> // remove from entity
-    void entity_remove_component(EntityId entity_id) {
-        component_manager->remove_component<T>(entity_id);
+    [[nodiscard]] ComponentMask entity_remove_component(EntityId entity_id) {
+        auto component_id = component_manager->remove_component<T>(entity_id);
 
-        ComponentMask component_mask = entity_manager->get_component_mask(entity_id);
-        entity_manager->set_component_mask(entity_id, component_mask);
-        system_manager->entity_component_mask_changed(entity_id, component_mask);
+        component_manager->get_component_id<T>();
+
+        entity_manager->remove_from_component_mask(entity_id, component_id);
+
+         
+        return entity_manager->get_component_mask(entity_id);
+        // NOTE: change this so it wont notify systems until the end of the frame
+        // system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
     template<typename T>
@@ -79,7 +87,7 @@ class ECS {
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T>
-    [[nodiscard]] std::string_view register_system_ecs() {
+    [[nodiscard]] std::string_view register_system() {
         return system_manager->register_system<T>();
     }
 

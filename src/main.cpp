@@ -1,3 +1,4 @@
+#include "ecs_hell/constants_using.hpp"
 #include "raylib.h"
 #include <libassert/assert.hpp>
 #include "constants.hpp"
@@ -9,7 +10,8 @@ GlobalState global;
 
 int main(void) {
 
-    global.schedule_create_entity();
+    global.initialize();
+    EntityId entity = global.create_entity();
     InitWindow(screenWidth, screenHeight, "THIS... is a BUCKET.");
 
     while (!WindowShouldClose()) {

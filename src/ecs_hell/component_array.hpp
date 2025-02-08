@@ -56,7 +56,7 @@ class ComponentArray : public IComponentArray {
   public:
     void add_component_data(EntityId entity_id, T component) {
         // add new entities to the end of the array
-        DEBUG_ASSERT(entity_to_index.contains(entity_id), "Component added twice.",
+        DEBUG_ASSERT(!entity_to_index.contains(entity_id), "Component added twice.",
                      entity_to_index);
         size_t new_index = component_count;
 

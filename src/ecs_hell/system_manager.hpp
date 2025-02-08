@@ -11,13 +11,6 @@ class System {
     // all systems should inherit from this system
 
   public:
-    // honestly, not sure if i like this or not
-    // i am holding entities on the systems themselves
-    // (might want to redo later)
-    // should be fine for now and performance is OK i think
-    // (consider a better approach if performance really matters?)
-    // -> adding Archetypes is a bigger improvement than caring about this tho
-
     std::set<EntityId> sys_entities{};
     virtual void sys_call() = 0;
 };
@@ -27,37 +20,41 @@ class SystemManager {
     // convert type_name -> respective component mask
     // simple map implementation, no need for premature optimization
     std::unordered_map<std::string_view, ComponentMask> system_component_masks;
-    // type_name -> respective System  pointer
+    // type_name -> respective System pointer
     std::unordered_map<std::string_view, std::shared_ptr<System>> all_systems;
 
   public:
     template<typename T>
     std::string_view register_system(ComponentMask component_mask) {
         std::string_view type_name = typeid(T).name();
-        DEBUG_ASSERT(all_systems.contains(type_name), "registered the system twice.", all_systems);
+        DEBUG_ASSERT(!all_systems.contains(type_name), "registered the system twice.",
+                     all_systems);
         auto system = std::make_shared<T>();
         all_systems.insert({type_name, system});
-        set_component_mask<T>( component_mask);
+        set_component_mask<T>(component_mask);
         return type_name;
     }
-private:
+
+  private:
     template<typename T>
     void set_component_mask(ComponentMask component_mask) {
         std::string_view type_name = typeid(T).name();
-        DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without registering!",
-                     all_systems);
+        DEBUG_ASSERT(all_systems.contains(type_name),
+                     "tried using system without registering!", all_systems);
         system_component_masks.insert({type_name, component_mask});
     }
-public:
-// TODO: maybe remove these extra public private later
-    
+
+  public:
+    // TODO: maybe remove these extra public private later
+
     std::shared_ptr<System> get_system(std::string_view type_name) {
         return all_systems[type_name];
     }
     // template<typename T> // will i use this? not sure (consider deleting)
     // void change_component_mask(ComponentMask component_mask) {
     //     std::string_view type_name = typeid(T).name();
-    //     DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without registering!",
+    //     DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without
+    //     registering!",
     //                  all_systems);
     //     system_component_masks[type_name] = component_mask;
     // }
@@ -72,14 +69,11 @@ public:
         }
     }
     void entity_component_mask_changed(EntityId entity_id, ComponentMask component_mask) {
-        // notify all systems the entity has been destroyed
+        // notify all systems that the entity has been destroyed
+        // and if matching, add this entity to the system
         for (auto const& pair : all_systems) {
             auto const& type_name = pair.first;
             auto const& system = pair.second;
-
-            DEBUG_ASSERT(!all_systems.contains(type_name),
-                         "tried using system without registering!", all_systems);
-
             auto const& system_mask = system_component_masks[type_name];
 
             if ((component_mask & system_mask) == system_mask) {
