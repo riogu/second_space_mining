@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.28)
 include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 get_filename_component(PROJECT_NAME ${CMAKE_CURRENT_LIST_DIR} NAME)
@@ -9,12 +9,12 @@ project(${PROJECT_NAME}
 	LANGUAGES C CXX
 	# CMAKE_BUILD_TYPE Debug
 )
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_CXX_STANDARD 23)
 ##########################################################################################
 # Configurable options
 ##########################################################################################
-
+set(CXX_SCAN_FOR_MODULES ON)
 # toggle libs to be used with ON and OFF
 option(USE_NO_ASSETS "Use no assets" OFF)
 option(USE_RAYLIB "Use raylib" ON)
@@ -105,7 +105,7 @@ if(NOT ${PLATFORM} STREQUAL "Web")
         target_link_libraries(${LIBRARIES} -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
         # dont forget to set  "cmake.configureSettings": { "CMAKE_BUILD_TYPE": "${buildType}" } in settings.json for vs code
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O0 -DDEBUG -fsanitize=address -Werror -g")
+            SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -DCMAKE_CXX_COMPILER=clang++ -O0 -DDEBUG -fsanitize=address -Werror -g")
         endif()
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_libraries(${LIBRARIES} -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic)
@@ -180,7 +180,6 @@ if(NOT WIN32)
 endif()
 # Set common compiler flags
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 23)
-
 if (${PLATFORM} STREQUAL "Web")
     # Tell Emscripten to build an .html file.
     set(CMAKE_EXECUTABLE_SUFFIX ".html")

@@ -6,7 +6,6 @@
 #include "ecs_hell/entity_manager.hpp"
 #include "ecs_hell/system_manager.hpp"
 #include <memory>
-
 class ECS {
   private:
     std::unique_ptr<EntityManager> entity_manager;
@@ -41,7 +40,7 @@ class ECS {
     }
 
     template<typename T>
-    [[nodiscard]] ComponentMask entity_add_component(EntityId entity_id, T component) {
+    void entity_add_component(EntityId entity_id, T component) {
         // tell the component manager to add this entity_id associated to this component
         // this updates the entity's component mask
         component_manager->add_component<T>(entity_id, component);
@@ -52,7 +51,7 @@ class ECS {
 
         // NOTE: this is slightly slower for clarity, this method can be merged
         // so you dont have to call "get component mask" after the call
-        return entity_manager->get_component_mask(entity_id);
+        // return entity_manager->get_component_mask(entity_id);
 
         // notify the systems of the change
         // NOTE: change this so it wont notify systems until the end of the frame
@@ -67,14 +66,13 @@ class ECS {
 
         entity_manager->remove_from_component_mask(entity_id, component_id);
 
-         
         return entity_manager->get_component_mask(entity_id);
         // NOTE: change this so it wont notify systems until the end of the frame
         // system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
     template<typename T>
-    [[nodiscard]] T& entity_get_component(EntityId entity_id) {
+    [[nodiscard]] T& get_component(EntityId entity_id) {
         return component_manager->get_component<T>(entity_id);
     }
 
@@ -87,8 +85,8 @@ class ECS {
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T>
-    [[nodiscard]] std::string_view register_system() {
-        return system_manager->register_system<T>();
+    void register_system(const ComponentMask &component_mask,const std::shared_ptr<System> &system_ptr ) {
+         system_manager->register_system<T>(component_mask, system_ptr);
     }
 
     template<typename T>

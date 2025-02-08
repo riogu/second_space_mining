@@ -1,6 +1,7 @@
 #ifndef SYSTEM_MANAGER_HPP
 #define SYSTEM_MANAGER_HPP
 #include "constants_using.hpp"
+#include <cstdlib>
 #include <libassert/assert.hpp>
 #include <memory>
 #include <set>
@@ -12,51 +13,54 @@ class System {
 
   public:
     std::set<EntityId> sys_entities{};
+    // sys_call is a generic method, required to sort systems by priority at the end.
+    // it is necessary to work around this method by storing variables in the system
+    // if needed for subsequent function calls
     virtual void sys_call() = 0;
 };
 
 class SystemManager {
   private:
-    // convert type_name -> respective component mask
+    // convert t_name -> respective component mask
     // simple map implementation, no need for premature optimization
     std::unordered_map<std::string_view, ComponentMask> system_component_masks;
-    // type_name -> respective System pointer
+    // t_name -> respective System pointer
     std::unordered_map<std::string_view, std::shared_ptr<System>> all_systems;
 
   public:
     template<typename T>
-    std::string_view register_system(ComponentMask component_mask) {
-        std::string_view type_name = typeid(T).name();
-        DEBUG_ASSERT(!all_systems.contains(type_name), "registered the system twice.",
+    void register_system(const ComponentMask& component_mask,
+                    const std::shared_ptr<System>& system_ptr) {
+        std::string_view t_name = libassert::type_name<T>();
+        DEBUG_ASSERT(!all_systems.contains(t_name), "registered the system twice.",
                      all_systems);
-        auto system = std::make_shared<T>();
-        all_systems.insert({type_name, system});
+        all_systems.insert({t_name, system_ptr});
+
         set_component_mask<T>(component_mask);
-        return type_name;
     }
 
   private:
     template<typename T>
     void set_component_mask(ComponentMask component_mask) {
-        std::string_view type_name = typeid(T).name();
-        DEBUG_ASSERT(all_systems.contains(type_name),
+        std::string_view t_name = libassert::type_name<T>();
+        DEBUG_ASSERT(all_systems.contains(t_name),
                      "tried using system without registering!", all_systems);
-        system_component_masks.insert({type_name, component_mask});
+        system_component_masks.insert({t_name, component_mask});
     }
 
   public:
     // TODO: maybe remove these extra public private later
 
-    std::shared_ptr<System> get_system(std::string_view type_name) {
-        return all_systems[type_name];
+    std::shared_ptr<System> get_system(std::string_view t_name) {
+        return all_systems[t_name];
     }
     // template<typename T> // will i use this? not sure (consider deleting)
     // void change_component_mask(ComponentMask component_mask) {
-    //     std::string_view type_name = typeid(T).name();
-    //     DEBUG_ASSERT(!all_systems.contains(type_name), "tried using system without
+    //     std::string_view t_name = typeid(T).name();
+    //     DEBUG_ASSERT(!all_systems.contains(t_name), "tried using system without
     //     registering!",
     //                  all_systems);
-    //     system_component_masks[type_name] = component_mask;
+    //     system_component_masks[t_name] = component_mask;
     // }
     void notify_destroyed_entity(EntityId entity_id) {
         // erases destroyed entity from all sets
@@ -72,9 +76,9 @@ class SystemManager {
         // notify all systems that the entity has been destroyed
         // and if matching, add this entity to the system
         for (auto const& pair : all_systems) {
-            auto const& type_name = pair.first;
+            auto const& t_name = pair.first;
             auto const& system = pair.second;
-            auto const& system_mask = system_component_masks[type_name];
+            auto const& system_mask = system_component_masks[t_name];
 
             if ((component_mask & system_mask) == system_mask) {
                 // NOTE: (see unity EntityQuery)
