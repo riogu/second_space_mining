@@ -1,17 +1,9 @@
 #ifndef COMPONENT_ARRAY_HPP
 #define COMPONENT_ARRAY_HPP
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
 #include <libassert/assert.hpp>
 #include <unordered_map>
-#include "raylib.h"
 #include "constants_using.hpp"
 
-struct Movement {
-    Vector2 initialVelocity;
-    Vector2 velocity;
-};
 
 // const uint64_t MAX_ELEMENTS = 100;
 //
@@ -60,7 +52,11 @@ class ComponentArray : public IComponentArray {
                      entity_to_index);
         size_t new_index = component_count;
 
+        entity_to_index[entity_id] = new_index;
+        index_to_entity[new_index] = entity_id;
+
         all_components[new_index] = component;
+
 
         // move forward current pointer
         component_count++;
@@ -88,8 +84,8 @@ class ComponentArray : public IComponentArray {
         component_count--;
     }
     T &get_component_data(EntityId entity_id) {
-        DEBUG_ASSERT(entity_to_index.contains(entity_id), "Removing non-existent component.",
-                     entity_to_index);
+        DEBUG_ASSERT(entity_to_index.contains(entity_id), "this entity does not have this component.",
+                     entity_to_index, entity_id);
         // notice that there is an overhead from the non-contiguous unordered_map access on this
         // method possibly replace this with something else later
         return all_components[entity_to_index[entity_id]];

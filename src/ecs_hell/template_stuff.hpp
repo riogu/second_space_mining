@@ -1,5 +1,6 @@
+#ifndef TEMPLATE_STUFF_HPP
+#define TEMPLATE_STUFF_HPP
 #include <array>
-#include <string_view>
 // template<std::size_t D, typename T>
 // auto make_uniform_array(T const& t) {
 //     return std::apply([&](auto... e) { return std::array{(e, t)...}; },
@@ -45,3 +46,4 @@ constexpr std::array<T, N> create_array(const T& value) {
 //         return name;
 //     }
 // } // namespace PROP_DETAIL
+#endif

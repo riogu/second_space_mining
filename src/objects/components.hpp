@@ -1,36 +1,31 @@
-#include "ecs_hell/system_manager.hpp"
+#ifndef COMPONENTS_HPP
+#define COMPONENTS_HPP
 #include "raylib.h"
 
-struct Transformation {
+struct Body {
     Vector2 position;
     Vector2 velocity;
+    float mass;
+};
+
+// NOTE: due to how we made the component arrays
+// we cant add structs that cant use default initializer lists
+// so, i cant make a Shape interface for other components to inherit from
+// a workaround to this is keeping these constructors in GlobalState if you want
+// to use user defined constructors but, you still cant store the structs as Shape
+// pointers
+// TODO: (try seeing if you can change ComponentArray to support this kind of thing?)
+// struct Shape {
+//     // generic interface for shapes, not sure if ill use it but its easy
+//     // to remove later
+//     virtual ~Shape() = default;
+// };
+
+struct CircleShape {
     float radius;
 };
 
-class PhysicsUpdate : public System {
-
-    // plan is to kind of use this class as a way to give a better name to the
-    // function call, also to group all physics updates into one known base type
-    // this way they are more easily grouped later if needed
-    // (this class guarantees the frametime variable in calling too)
-
-  public:
-    float frametime;
-
-    virtual ~PhysicsUpdate() = default;
-    PhysicsUpdate(float frametime) : frametime(frametime) {}
-
-    void sys_call() override { update(frametime); };
-    virtual void update(float frametime) = 0;
+struct Render {
+    Color color;
 };
-
-class CirclePhysicsUpdate : public PhysicsUpdate {
-    // an example, we deal with only the circle physics update here
-    // granted, all of this could simply be one with if statements,
-    // or just adding another system unrelated to physics update
-    // but i want to try grouping these together for now (can remove later)
-
-public:
-    CirclePhysicsUpdate(float frametime) : PhysicsUpdate(frametime) {}
-    void update(float frametime) override;
-};
+#endif

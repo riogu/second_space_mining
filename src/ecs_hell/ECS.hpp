@@ -1,6 +1,5 @@
-#ifndef GLOBAL_MANAGER_HPP
-#define GLOBAL_MANAGER_HPP
-
+#ifndef ECS_HPP 
+#define ECS_HPP 
 #include "ecs_hell/component_manager.hpp"
 #include "ecs_hell/constants_using.hpp"
 #include "ecs_hell/entity_manager.hpp"
@@ -28,7 +27,7 @@ class ECS {
     void destroy_entity(EntityId entity_id) {
         entity_manager->destroy_entity(entity_id);
         component_manager->notify_destroyed_entity(entity_id);
-        // system_manager->notify_destroyed_entity(entity_id);
+        system_manager->notify_destroyed_entity(entity_id);
     }
     // --------------------------------------------------------------------------------------
 
@@ -51,11 +50,11 @@ class ECS {
 
         // NOTE: this is slightly slower for clarity, this method can be merged
         // so you dont have to call "get component mask" after the call
-        // return entity_manager->get_component_mask(entity_id);
+        ComponentMask component_mask = entity_manager->get_component_mask(entity_id);
 
         // notify the systems of the change
         // NOTE: change this so it wont notify systems until the end of the frame
-        // system_manager->entity_component_mask_changed(entity_id, component_mask);
+        system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
     template<typename T> // remove from entity
@@ -66,9 +65,10 @@ class ECS {
 
         entity_manager->remove_from_component_mask(entity_id, component_id);
 
-        return entity_manager->get_component_mask(entity_id);
+        ComponentMask component_mask = entity_manager->get_component_mask(entity_id);
+        system_manager->entity_component_mask_changed(entity_id, component_mask);
+        return component_mask;
         // NOTE: change this so it wont notify systems until the end of the frame
-        // system_manager->entity_component_mask_changed(entity_id, component_mask);
     }
 
     template<typename T>
@@ -85,8 +85,9 @@ class ECS {
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T>
-    void register_system(const ComponentMask &component_mask,const std::shared_ptr<System> &system_ptr ) {
-         system_manager->register_system<T>(component_mask, system_ptr);
+    void register_system(const ComponentMask& component_mask,
+                         const std::shared_ptr<T>& system_ptr) {
+        system_manager->register_system<T>(component_mask, system_ptr);
     }
 
     template<typename T>

@@ -37,7 +37,7 @@ class ComponentManager {
     [[nodiscard]] ComponentId get_component_id() {
         std::string_view t_name = libassert::type_name<T>();
         DEBUG_ASSERT(component_ids.contains(t_name), "forgot to register component",
-                     component_ids);
+                     component_ids, current_component_id);
         // we use this component id to make component bitmasks
         return component_ids[t_name];
     }
@@ -45,7 +45,7 @@ class ComponentManager {
     T& get_component(EntityId entity_id) {
         std::string_view t_name = libassert::type_name<T>();
         DEBUG_ASSERT(component_ids.contains(t_name), "forgot to register component",
-                     component_ids);
+                     component_ids, t_name);
         std::shared_ptr<ComponentArray<T>> cast_component_array =
             std::static_pointer_cast<ComponentArray<T>>(component_arrays[t_name]);
         return cast_component_array->get_component_data(entity_id);

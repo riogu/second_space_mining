@@ -11,6 +11,6 @@ const ComponentId MAX_COMPONENTS = 64;
 using ComponentMask = uint64_t;
 
 
-const uint64_t MAX_SYSTEMS = 1000;
+const uint64_t MAX_SYSTEMS = 12;
 
 #endif

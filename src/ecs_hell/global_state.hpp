@@ -1,9 +1,6 @@
+#ifndef GLOBAL_STATE_HPP
+#define GLOBAL_STATE_HPP
 #include "ECS.hpp"
-#include "ecs_hell/component_array.hpp"
-#include "ecs_hell/constants_using.hpp"
-#include <memory>
-#include <sched.h>
-#include <string_view>
 //
 //--------------------------------------------------------------------------------------
 //
@@ -36,11 +33,12 @@ class GlobalState {
 
   private:
     std::unique_ptr<ECS> ecs;
-    Priority current_max_priority{0};
+    Priority current_max_priority{};
     Scheduler scheduler{};
     std::array<EntityId, MAX_ENTITY_IDS> all_entity_ids_debug{};
 
   public:
+    float frametime;
     void initialize() {
         ecs = std::make_unique<ECS>();
         ecs->initialize();
@@ -85,34 +83,45 @@ class GlobalState {
     [[nodiscard]] T& get_component(EntityId entity_id) {
         return ecs->get_component<T>(entity_id);
     }
+    template<typename T>
+    [[nodiscard]] ComponentId get_component_id() {
+        return ecs->get_component_id<T>();
+    }
     // --------------------------------------------------------------------------------------
 
     // --------------------------------------------------------------------------------------
     // system stuff
     template<typename T, Priority priority, typename... Types>
-    void register_system(ComponentMask component_mask, const Types&... args) {
+    void register_system(ComponentMask component_mask, Types&... args) {
+
         DEBUG_ASSERT(scheduler.system_scheduler[priority] == nullptr,
                      "already used this priority.", scheduler.system_scheduler);
 
-        std::shared_ptr<System> system_ptr = std::make_shared<T>(args...);
-
+        std::shared_ptr<T> system_ptr = std::make_shared<T>(args...);
         ecs->register_system<T>(component_mask, system_ptr);
 
         scheduler.system_scheduler[priority] = system_ptr;
         current_max_priority++;
+        // return system_ptr;
     }
-    template<typename T>
-    void add_system_instance(T system) {}
     // void notify_systems() {
     //     for (auto entity_id : scheduler.entities_to_update_components) {
     //     }
     // }
     void run_systems() {
-        for (Priority curr = 0; curr < current_max_priority; curr++) {
-            // std::string_view type_name = scheduler.system_scheduler[curr];
-            // std::shared_ptr<System> system = ecs->get_system(type_name);
-            // system->sys_call();
+        for (Priority priority = 0; priority < current_max_priority; priority++) {
+
+            std::shared_ptr<System> system_ptr = scheduler.system_scheduler[priority];
+            DEBUG_ASSERT(system_ptr != nullptr, "skipped a priority value.", priority,
+                         current_max_priority, scheduler.system_scheduler);
+            system_ptr->sys_call();
         }
+    }
+    template<typename T>
+    [[nodiscard]] std::shared_ptr<System> get_system() {
+        std::string_view type_name = libassert::type_name<T>();
+        return ecs->get_system(type_name);
+
     }
 
     // --------------------------------------------------------------------------------------
@@ -121,3 +130,4 @@ class GlobalState {
 // NOTE: we are linking this global variable with all files that include this
 // header
 extern GlobalState global;
+#endif
