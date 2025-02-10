@@ -121,7 +121,6 @@ class GlobalState {
     [[nodiscard]] std::shared_ptr<System> get_system() {
         std::string_view type_name = libassert::type_name<T>();
         return ecs->get_system(type_name);
-
     }
 
     // --------------------------------------------------------------------------------------
@@ -129,5 +128,4 @@ class GlobalState {
 
 // NOTE: we are linking this global variable with all files that include this
 // header
-extern GlobalState global;
 #endif

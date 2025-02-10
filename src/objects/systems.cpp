@@ -5,37 +5,37 @@
 #include "ecs_hell/constants_using.hpp"
 #include "ecs_hell/global_state.hpp"
 #include "raymath.h"
-
+#include <memory>
+extern std::unique_ptr<GlobalState> global;
 void solve_collision_aux(Body& body, Body& other_body, CircleShape& shape,
                          CircleShape& other_shape);
 void CirclePhysicsUpdate::update_velocity() {
 
     for (auto entity_id : sys_entities) {
-        auto& body = global.get_component<Body>(entity_id);
+        auto& body = global->get_component<Body>(entity_id);
         for (auto other_entity_id : sys_entities) {
             if (entity_id == other_entity_id) {
                 continue;
             }
-            auto& other_body = global.get_component<Body>(other_entity_id);
+            auto& other_body = global->get_component<Body>(other_entity_id);
 
             Vector2 force_direction =
                 Vector2Normalize(other_body.position - body.position);
             // F = (G x m1 x m2) / r²; F = m x a
-
             // rewritten as:
             //       a = (G x m2) / r²
             float sqr_distance = Vector2DistanceSqr(other_body.position, body.position);
             Vector2 acceleration =
                 force_direction * GRAVITATIONAL_CONSTANT * other_body.mass / sqr_distance;
             // multiplied by direction to turn magnitude into vectorial change
-            body.velocity += acceleration * global.frametime;
+            body.velocity += acceleration * global->frametime;
         }
     }
 }
 void CirclePhysicsUpdate::detect_screen_collision() {
     for (const auto entity_id : sys_entities) {
-        auto& body = global.get_component<Body>(entity_id);
-        auto& shape = global.get_component<CircleShape>(entity_id);
+        auto& body = global->get_component<Body>(entity_id);
+        auto& shape = global->get_component<CircleShape>(entity_id);
         float damping = 0.5;
         if (body.position.x + shape.radius > screenWidth) {
             body.velocity.x = -body.velocity.x * damping;
@@ -67,13 +67,13 @@ void CirclePhysicsUpdate::detect_collision(EntityId entity_id, EntityId other_en
     // read this to understand how this function works
     // https://dipamsen.github.io/notebook/collisions.pdf
 
-    auto& body = global.get_component<Body>(entity_id);
-    auto& other_body = global.get_component<Body>(other_entity_id);
+    auto& body = global->get_component<Body>(entity_id);
+    auto& other_body = global->get_component<Body>(other_entity_id);
 
-    auto& shape = global.get_component<CircleShape>(entity_id);
-    auto& other_shape = global.get_component<CircleShape>(other_entity_id);
+    auto& shape = global->get_component<CircleShape>(entity_id);
+    auto& other_shape = global->get_component<CircleShape>(other_entity_id);
     float distance = Vector2Distance(other_body.position, body.position);
-    float radius_sum = other_shape.radius + other_shape.radius;
+    float radius_sum = shape.radius + other_shape.radius;
 
     if (distance < radius_sum) {
         solve_collision_aux(body, other_body, shape, other_shape);
@@ -82,8 +82,8 @@ void CirclePhysicsUpdate::detect_collision(EntityId entity_id, EntityId other_en
 void CirclePhysicsUpdate::update_position() {
 
     for (const auto entity_id : sys_entities) {
-        auto& body = global.get_component<Body>(entity_id);
-        body.position += body.velocity * global.frametime;
+        auto& body = global->get_component<Body>(entity_id);
+        body.position += body.velocity * global->frametime;
     }
 }
 
@@ -129,20 +129,20 @@ void solve_collision_aux(Body& body, Body& other_body, CircleShape& shape,
 
 void DrawCircle::draw() {
     for (auto& entity_id : sys_entities) {
-        auto& body = global.get_component<Body>(entity_id);
-        auto& render = global.get_component<Render>(entity_id);
-        auto& shape = global.get_component<CircleShape>(entity_id);
+        auto& body = global->get_component<Body>(entity_id);
+        auto& render = global->get_component<Render>(entity_id);
+        auto& shape = global->get_component<CircleShape>(entity_id);
         DrawCircleV(body.position, shape.radius, render.color);
     }
 }
 
 void CirclePhysicsUpdate::solve_collision(EntityId entity_id, EntityId other_entity_id) {
     // find new velocity vectors
-    auto& body = global.get_component<Body>(entity_id);
-    auto& other_body = global.get_component<Body>(other_entity_id);
+    auto& body = global->get_component<Body>(entity_id);
+    auto& other_body = global->get_component<Body>(other_entity_id);
 
-    auto& shape = global.get_component<CircleShape>(entity_id);
-    auto& other_shape = global.get_component<CircleShape>(other_entity_id);
+    auto& shape = global->get_component<CircleShape>(entity_id);
+    auto& other_shape = global->get_component<CircleShape>(other_entity_id);
     float distance = Vector2Distance(other_body.position, body.position);
 
     float mass_sum = body.mass + other_body.mass;

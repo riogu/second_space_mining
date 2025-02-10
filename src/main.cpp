@@ -1,45 +1,48 @@
 #include "constants.hpp"
+#include "ecs_hell/constants_using.hpp"
 #include "ecs_hell/global_state.hpp"
-#include "objects/components.hpp"
+#include "objects/systems.hpp"
 #include "raylib.h"
+#include <memory>
+#include <mutex>
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
-GlobalState global;
+std::unique_ptr<GlobalState> global;
 void ecs_test();
-
-void system_test_ecs();
+void add_an_entity();
 int main(void) {
-    SetTraceLogLevel(DEBUG);
-
-    global.initialize();
 
     InitWindow(screenWidth, screenHeight, "THIS... is a BUCKET.");
+    global = std::make_unique<GlobalState>();
+    global->initialize();
 
-    // auto circle_physics_update = global.get_system<CirclePhysicsUpdate>();
-    // auto draw_circle = global.get_system<class DrawCircle>();
-
-
+    SetTargetFPS(60);
     ecs_test();
-
+    int count = 0;
     while (!WindowShouldClose()) {
+        ClearBackground(BLACK);
         BeginDrawing();
-        static float frametime = GetFrameTime();
 
-        // circle_physics_update->update();
-        // draw_circle->draw();
-        // DrawCircleV(screenCenter, 10.0f, BLUE);
-        global.frametime = GetFrameTime();
-        global.run_systems();
+        global->frametime = GetFrameTime();
+        global->run_systems();
+
+        count++;
+        if (60 == count % 120) {
+            add_an_entity();
+        }
+
 
         ClearBackground(BLACK);
-
         EndDrawing();
     }
-
     //--------------------------------------------------------------------------------------
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return 0;
 }
+
+
+
+
