@@ -2,7 +2,7 @@
 #define CONSTANTS_USING_HPP
 #include <cstdint>
 using EntityId = uint64_t;
-const EntityId MAX_ENTITY_IDS = 100;
+const EntityId MAX_ENTITY_IDS = 1000;
 
 // components also have ids
 using ComponentId = uint8_t;

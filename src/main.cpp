@@ -17,7 +17,7 @@ int main(void) {
     global = std::make_unique<GlobalState>();
     global->initialize();
 
-    SetTargetFPS(60);
+    SetTargetFPS(144);
     ecs_test();
     int count = 0;
     while (!WindowShouldClose()) {
@@ -28,7 +28,7 @@ int main(void) {
         global->run_systems();
 
         count++;
-        if (60 == count % 120) {
+        if (10 == count % 20) {
             add_an_entity();
         }
 

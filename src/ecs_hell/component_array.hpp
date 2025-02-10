@@ -40,7 +40,7 @@ using Index = uint64_t;
 template<typename T>
 class ComponentArray : public IComponentArray {
   private:
-    std::array<T, MAX_COMPONENTS> all_components{};
+    std::array<T, MAX_ENTITY_IDS> all_components{};
     std::unordered_map<EntityId, Index> entity_to_index;
     std::unordered_map<Index, EntityId> index_to_entity;
     size_t component_count{};
